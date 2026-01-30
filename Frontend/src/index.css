@@ -1,0 +1,324 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Removed old color definitions as Tailwind now manages them */
+  font-family: 'Orbitron', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  /* Force dark mode for Tron theme */
+  color: #D1E8E2;
+  /* Muted teal-white */
+  background-color: #0A0F14;
+  /* Deeper, softer dark */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  min-height: 100%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+a {
+  font-weight: 500;
+  color: #00FFFF;
+  /* Use primary color for links */
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #00FF00;
+  /* Use secondary color for link hover */
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Orbitron', sans-serif;
+  /* Apply Orbitron to body */
+}
+
+/* Remove or update old h1 and button styles if they conflict */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: #00FFFF;
+  /* Example: Apply primary color to h1 */
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #00FFFF;
+  /* Example: Apply primary color to buttons */
+  color: #010B13;
+  /* Dark text for light buttons */
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s;
+}
+
+button:hover {
+  border-color: #00FF00;
+  /* Secondary color on hover */
+  background-color: #00FF00;
+  color: #010B13;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto #00FFFF;
+  /* Primary color for focus outline */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: dark;
+    /* Force dark mode for Tron theme */
+    color: #E0FFFF;
+    background-color: #010B13;
+  }
+
+  a:hover {
+    color: #00FF00;
+  }
+
+  button {
+    background-color: #00FFFF;
+    color: #010B13;
+  }
+}
+
+/* ===== Animation Utilities ===== */
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-5px) rotate(1deg);
+  }
+
+  75% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* ===== Hover Effects ===== */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  border-color: #00FFFF;
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+  /* More subtle scale */
+}
+
+.focus-contrast {
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.focus-contrast:hover {
+  background-color: rgba(0, 200, 200, 0.08) !important;
+  border-color: rgba(0, 200, 200, 0.4) !important;
+}
+
+.collapsible-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-container.open {
+  grid-template-rows: 1fr;
+}
+
+.collapsible-inner {
+  overflow: hidden;
+}
+
+:root {
+  --bg-background: #0A0F14;
+  --color-primary: #00C8C8;
+  /* Softer Cyan */
+  --color-secondary: #10B981;
+  /* Emerald/Softer Green */
+  --color-accent: #D946EF;
+  /* Fuschia/Softer Pink */
+  --color-text: #D1E8E2;
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+}
+
+.high-contrast {
+  --bg-background: #000000;
+  --color-primary: #FFFF00;
+  --color-secondary: #00FF00;
+  --color-accent: #FFFFFF;
+  --color-text: #FFFFFF;
+}
+
+.font-size-small {
+  font-size: 0.875rem !important;
+}
+
+.font-size-medium {
+  font-size: 1rem !important;
+}
+
+.font-size-large {
+  font-size: 1.125rem !important;
+}
+
+/* ===== Speech Bubble ===== */
+.speech-bubble {
+  position: relative;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 0, 0.05));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  backdrop-filter: blur(10px);
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(0, 255, 255, 0.3);
+}
+
+/* ===== Tutorial Overlay ===== */
+.tutorial-highlight {
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+}

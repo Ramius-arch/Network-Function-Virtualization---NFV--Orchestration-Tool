@@ -1,0 +1,23 @@
+{
+  "name": "nfv-orchestration-tool",
+  "version": "1.0.0",
+  "description": "Monorepo for NFV Orchestration Tool",
+  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "Backend",
+    "Frontend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-all": "npm install --workspace Backend && npm install --workspace Frontend",
+    "start-backend": "npm start --workspace Backend",
+    "start-frontend": "npm run dev --workspace Frontend",
+    "start-all": "npm run start-backend & npm run start-frontend",
+    "lint-all": "npm run lint --workspace Backend && npm run lint --workspace Frontend",
+    "test-all": "npm test --workspace Backend && npm test --workspace Frontend"
+  },
+  "keywords": [],
+  "author": "Ramius_arch",
+  "license": "ISC"
+}

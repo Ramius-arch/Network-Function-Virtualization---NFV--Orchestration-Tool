@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies and build backend
+      working-directory: ./Backend
+      run: |
+        npm install
+        npm run build
+
+    - name: Install dependencies and build frontend
+      working-directory: ./Frontend
+      run: |
+        npm install
+        npm run build
+
+    - name: Docker build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: user/app:latest
