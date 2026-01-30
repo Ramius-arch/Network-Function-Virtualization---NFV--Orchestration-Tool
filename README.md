@@ -1,140 +1,109 @@
-# NFV Orchestration Tool "Atomic"
+# ⚛️ Atomic Platform: Next-Gen NFV Orchestration
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](.)
 [![Tests](https://img.shields.io/badge/tests-24%20passing-brightgreen)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue)](.)
+[![Author](https://img.shields.io/badge/author-Ramius__arch-cyan)](https://github.com/Ramius-arch)
 
-An NFV (Network Function Virtualization) orchestration tool designed to deploy and manage virtual network functions across telecom infrastructure. Enables telecom operators to virtualize network functions such as firewalls, NATs, and load balancers on scalable resources while ensuring high availability and performance.
+> **Precision Control and Real-time Visualization for the Virtualized Network Edge.**
 
-## Quick Start
+Atomic is a high-performance **Network Function Virtualization (NFV) Orchestration Tool** designed for the modern telecom landscape. It bridges the gap between complex bare-metal infrastructure and agile, cloud-native virtualization, providing operators with a unified command center for deployment, monitoring, and scaling.
 
+---
+
+## 🚀 Core Value Proposition
+
+Atomic simplifies the lifecycle management of Virtual Network Functions (VNFs) by providing a **single pane of glass** for:
+- **Dynamic Provisioning**: Rapid allocation of compute and memory assets.
+- **Topology Intelligence**: Live, interactive mapping of cross-domain infrastructure.
+- **Unified Telemetry**: High-resolution performance tracking and predictive monitoring.
+- **Hybrid Control**: Seamlessly bridging modern SDN flows with legacy CLI-based hardware.
+
+---
+
+## ✨ Key Features
+
+### 🛠️ Strategic Orchestration
+- **Control Plane Manager**: Push silicon-level configurations and query real-time sensor states.
+- **Data Plane Flow-Bridge**: Inject SDN flow-rules across switches with sub-second latency.
+- **Resource Inventory**: Lease and scale physical assets dynamically via a managed registry.
+
+### 📊 Tactical Awareness
+- **Telemetry Stream**: Real-time visualization of CPU, Memory, and Network throughput.
+- **Interactive Topology**: A fully interactive, graph-based map of the network mesh.
+- **Collapsible Dashboards**: Information-dense yet clean layouts optimized for operational focus.
+
+### 🧪 Dual-Mode Environment
+- **Live Mode**: Direct infrastructure manipulation for production-grade orchestration.
+- **Demo Sandbox**: A fully-functional simulation mode with mock data and visual indicators—perfect for training, testing, and system walkthroughs.
+
+---
+
+## 🧬 System Architecture
+
+Atomic uses a modular **Multi-Page Architecture** built for reliability and scale:
+
+```mermaid
+graph TD
+    A[Frontend Dashboard] --> B[Environment Context]
+    B -->|Live| C[Real-Time API]
+    B -->|Demo| D[Simulated Sandbox]
+    C --> E[NFV Control Plane]
+    C --> F[Resource Allocator]
+    E --> G[Virtual Network Functions]
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, **Tailwind CSS**, Vite |
+| **Data Viz** | **XYFlow** (Topology UX), **Chart.js** (Telemetry) |
+| **Backend** | Node.js, Express, TypeScript |
+| **Security** | JWT Authentication, Context-based Access Control |
+| **Testing** | Jest (Backend), Vitest (Frontend) |
+
+---
+
+## 🏁 Quick Start
+
+### 1. Installation
 ```bash
-# Install all dependencies
+# Clone and install all dependencies
 npm install
-
-# Run the full application
-npm run start-all
-
-# Run all tests
-npm run test-all
-
-# Run all linting
-npm run lint-all
 ```
 
-## Project Structure
-
-```
-NFV-Orchestration-Tool/
-├── Backend/          # Express.js API server
-├── Frontend/         # React + Vite application  
-└── package.json      # Monorepo workspace configuration
-```
-
-## Features
-
-### Backend
-- **Mock Services** - Simulation mode via `MOCK_DATA=true` environment variable
-- **JWT Authentication** - Secure `/auth/register` and `/auth/login` endpoints
-- **Protected API Routes** - All `/api` routes require valid JWT tokens
-- **Winston Logging** - Centralized error handling and logging
-
-### Frontend
-- **Tailwind CSS** - Modern, responsive UI with custom color palette
-- **React Flow** - Interactive network topology visualization
-- **Chart.js** - Real-time monitoring dashboards
-- **Auth Context** - Global authentication state management
-- **Error Boundaries** - Graceful error handling
-
-## Development
-
-### Prerequisites
-- Node.js (LTS version recommended)
-- npm (Node Package Manager)
-
-### Workspace Commands
-
-| Command | Description |
-|---------|-------------|
-| `npm run start-all` | Start both Backend and Frontend |
-| `npm run build-all` | Build both workspaces |
-| `npm run lint-all` | Lint both workspaces |
-| `npm run test-all` | Run all tests (Backend: Jest, Frontend: Vitest) |
-
-### Individual Workspace Commands
-
-```bash
-# Backend
-cd Backend
-npm install
-npm start        # Start server on http://localhost:3000
-npm test         # Run Jest tests
-npm run lint     # Run ESLint
-
-# Frontend  
-cd Frontend
-npm install
-npm run dev      # Start dev server on http://localhost:5173
-npm test         # Run Vitest tests
-npm run lint     # Run ESLint
-npm run build    # Production build
-```
-
-### Environment Variables
-
-Create a `.env` file in the Backend directory:
-
+### 2. Configuration
+Create a `.env` in the `Backend/` directory:
 ```env
-MOCK_DATA=true          # Enable mock services
-JWT_SECRET=your-secret  # JWT signing secret
-PORT=3000               # Server port
+MOCK_DATA=true          # Toggle for global simulation mode
+JWT_SECRET=your_secret  # Secret for secure session tokens
+PORT=3000
 ```
 
-## Testing
-
-| Workspace | Framework | Tests |
-|-----------|-----------|-------|
-| Backend | Jest | 21 tests (5 suites) |
-| Frontend | Vitest | 3 tests (1 suite) |
-
+### 3. Launch
 ```bash
-# Run all tests
-npm run test-all
-
-# Backend tests with coverage
-cd Backend && npm test -- --coverage
-
-# Frontend tests in watch mode
-cd Frontend && npx vitest
+# Start full stack (Frontend + Backend)
+npm run start-all
 ```
 
-## API Endpoints
+---
 
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register new user |
-| POST | `/auth/login` | Login and receive JWT |
+## 🎨 UI/UX Philosophy: "The Atomic Aesthetic"
+The platform features a custom-engineered **Atomic Theme**—a professional-grade, eye-friendly "Midnight" aesthetic designed for long operational shifts. It prioritizes information density while maintaining visual comfort through:
+- **Softer Neon Palette**: High-contrast elements shifted to eye-friendly cyan and muted amber.
+- **Focus-Aware UX**: Hover effects and active states that provide subtle, clear feedback.
+- **Bento Grid Layouts**: Clean, modular structure for complex navigation.
 
-### Protected Routes (require JWT)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/resource-allocator/allocate` | Allocate resources |
-| POST | `/api/resource-allocator/scale` | Scale resources |
-| POST | `/api/control-plane/configure` | Configure VNF |
-| GET | `/api/control-plane/state/:name` | Get VNF state |
-| GET | `/api/monitoring/metrics` | Get performance metrics |
+---
 
-## Tech Stack
-
-**Backend:** Node.js, Express, TypeScript, Jest, JWT, Winston
-
-**Frontend:** React 19, Vite, TypeScript, Tailwind CSS, React Flow, Chart.js, Vitest
-
-## Author
+## 👤 Author
 
 **Ramius_arch** - *Lead Architect & Developer*
 
-## License
+---
 
-MIT License
+## 📄 License
+Atomic is licensed under the [MIT License](LICENSE).
