@@ -1,7 +1,7 @@
 # Backend Dockerfile
 FROM node:18-alpine AS backend
 WORKDIR /app
-COPY Backend/package.json Backend/package-lock.json ./
+COPY Backend/package.json ./
 RUN npm install --production
 COPY Backend/ .
 RUN npm run build
@@ -10,7 +10,7 @@ CMD ["node", "dist/index.js"]
 # Frontend Dockerfile
 FROM node:18-alpine AS frontend
 WORKDIR /app
-COPY Frontend/package.json Frontend/package-lock.json ./
+COPY Frontend/package.json ./
 RUN npm install
 COPY Frontend/ .
 RUN npm run build
