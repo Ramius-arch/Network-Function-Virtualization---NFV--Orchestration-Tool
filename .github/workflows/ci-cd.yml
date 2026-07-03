@@ -19,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 22
 
     - name: Install dependencies and build backend
       working-directory: ./Backend
@@ -33,9 +33,9 @@ jobs:
         npm install
         npm run build
 
-    - name: Docker build and push
+    - name: Docker build (verification only)
       uses: docker/build-push-action@v4
       with:
         context: .
-        push: true
+        push: false
         tags: user/app:latest
