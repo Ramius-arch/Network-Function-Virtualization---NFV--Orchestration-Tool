@@ -4,6 +4,12 @@ interface LoginProps {
   onLoginSuccess: (token: string) => void;
 }
 
+const generateMockJWT = (username: string): string => {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(JSON.stringify({ id: 'guest', username, exp: Math.floor(Date.now() / 1000) + 3600 }));
+  return `${header}.${payload}.mock_signature`;
+};
+
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -51,8 +57,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       try {
         const users = JSON.parse(localStorage.getItem('atomic_mock_users') || '{}');
         if (users[username] && users[username] === password) {
-          const mockPayload = { username, exp: Date.now() + 3600000 };
-          const mockToken = `mock-jwt-${btoa(JSON.stringify(mockPayload))}`;
+          const mockToken = generateMockJWT(username);
           onLoginSuccess(mockToken);
         } else {
           setError('Invalid credentials (local fallback) or user not registered locally');
@@ -67,8 +72,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   const handleGuestLogin = () => {
     setLoading(true);
-    const mockPayload = { username: 'guest_user', exp: Date.now() + 3600000 };
-    const mockToken = `mock-jwt-${btoa(JSON.stringify(mockPayload))}`;
+    const mockToken = generateMockJWT('guest_user');
     
     console.log('Logging in as guest user for showcase.');
     

@@ -1,8 +1,15 @@
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 interface RegisterProps {
   onRegisterSuccess: () => void;
 }
+
+const generateMockJWT = (username: string): string => {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(JSON.stringify({ id: 'guest', username, exp: Math.floor(Date.now() / 1000) + 3600 }));
+  return `${header}.${payload}.mock_signature`;
+};
 
 const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const [username, setUsername] = useState('');
@@ -10,6 +17,17 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { login } = useAuth();
+
+  const handleGuestLogin = () => {
+    setLoading(true);
+    const mockToken = generateMockJWT('guest_user');
+    console.log('Logging in as guest user from registration.');
+    setTimeout(() => {
+      login(mockToken);
+      setLoading(false);
+    }, 800);
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,10 +123,23 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
               disabled={loading}
             >
               {loading ? 'Registering...' : 'Register'}
+            </button>
+            <div className="flex items-center my-1">
+              <div className="flex-grow border-t border-text/10"></div>
+              <span className="mx-4 text-[10px] text-text/30 font-mono tracking-widest">OR</span>
+              <div className="flex-grow border-t border-text/10"></div>
+            </div>
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              className="w-full border border-primary/40 text-primary hover:bg-primary/10 font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
+              disabled={loading}
+            >
+              Explore as Guest (Demo)
             </button>
           </div>
         </form>
