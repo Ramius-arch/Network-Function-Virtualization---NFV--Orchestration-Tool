@@ -65,6 +65,19 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     }
   };
 
+  const handleGuestLogin = () => {
+    setLoading(true);
+    const mockPayload = { username: 'guest_user', exp: Date.now() + 3600000 };
+    const mockToken = `mock-jwt-${btoa(JSON.stringify(mockPayload))}`;
+    
+    console.log('Logging in as guest user for showcase.');
+    
+    setTimeout(() => {
+      onLoginSuccess(mockToken);
+      setLoading(false);
+    }, 800);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-text">
       <div className="p-8 bg-white rounded shadow-md w-full max-w-md">
@@ -97,13 +110,26 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
           {error && <p className="text-error text-xs italic mb-4">{error}</p>}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 mt-6">
             <button
               type="submit"
-              className="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
               disabled={loading}
             >
               {loading ? 'Logging In...' : 'Login'}
+            </button>
+            <div className="flex items-center my-1">
+              <div className="flex-grow border-t border-text/10"></div>
+              <span className="mx-4 text-[10px] text-text/30 font-mono tracking-widest">OR</span>
+              <div className="flex-grow border-t border-text/10"></div>
+            </div>
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              className="w-full border border-primary/40 text-primary hover:bg-primary/10 font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
+              disabled={loading}
+            >
+              Explore as Guest (Demo)
             </button>
           </div>
         </form>
