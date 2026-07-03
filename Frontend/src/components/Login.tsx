@@ -15,8 +15,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setError('');
 
+    let response;
+    let data;
+    let apiFailed = false;
+
     try {
-      const response = await fetch('/api/auth/login', {
+      response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -24,18 +28,40 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        onLoginSuccess(data.token);
+      if (response.status === 404 || response.status === 502 || response.status === 503 || response.status === 504) {
+        apiFailed = true;
       } else {
-        setError(data.message || 'Login failed');
+        data = await response.json();
+        if (response.ok) {
+          onLoginSuccess(data.token);
+          setLoading(false);
+          return;
+        } else {
+          setError(data.message || 'Login failed');
+          setLoading(false);
+          return;
+        }
       }
     } catch (err: unknown) {
-      const error = err as Error;
-      setError(`Network error or server unreachable: ${error.message}`);
-    } finally {
-      setLoading(false);
+      apiFailed = true;
+    }
+
+    if (apiFailed) {
+      console.warn('API unreachable or offline. Falling back to browser-local login for showcase.');
+      try {
+        const users = JSON.parse(localStorage.getItem('atomic_mock_users') || '{}');
+        if (users[username] && users[username] === password) {
+          const mockPayload = { username, exp: Date.now() + 3600000 };
+          const mockToken = `mock-jwt-${btoa(JSON.stringify(mockPayload))}`;
+          onLoginSuccess(mockToken);
+        } else {
+          setError('Invalid credentials (local fallback) or user not registered locally');
+        }
+      } catch (err) {
+        setError('Error reading local storage auth database');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

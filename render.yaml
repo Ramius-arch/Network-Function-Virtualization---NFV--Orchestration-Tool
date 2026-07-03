@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sdn-orchestration-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    rootDir: Backend
+    envVars:
+      - key: MOCK_DATA
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
