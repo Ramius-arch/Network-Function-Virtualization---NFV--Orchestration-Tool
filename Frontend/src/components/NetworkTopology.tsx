@@ -265,7 +265,7 @@ const NetworkTopology = () => {
             nodeColor="#050505"
             maskColor="rgba(0, 0, 0, 0.8)"
           />
-          <Background color="#00FFFF" gap={30} size={1} variant={BackgroundVariant.Lines} opacity={0.03} />
+          <Background color="#00FFFF" gap={30} size={1} variant={BackgroundVariant.Lines} style={{ opacity: 0.03 }} />
         </ReactFlow>
       </div>
 
