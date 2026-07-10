@@ -88,55 +88,80 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-text">
-      <div className="p-8 bg-white rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-text">Register</h2>
-        <form onSubmit={handleRegister}>
-          <div className="mb-4">
-            <label className="block text-text text-sm font-bold mb-2" htmlFor="username">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#030712] text-white font-space-grotesk relative overflow-hidden px-4">
+      {/* Background radial gradient spotlight */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+      <div className="p-8 bg-slate-950/60 border border-white/5 rounded-3xl w-full max-w-md backdrop-blur-xl shadow-2xl relative z-10 text-left">
+        <div className="text-center mb-8">
+          <span className="text-[9px] font-bold font-mono text-violet-500 uppercase tracking-[0.4em] block mb-2">Create Operator Account</span>
+          <h2 className="text-3xl font-bold text-white tracking-tight">Register</h2>
+        </div>
+
+        <form onSubmit={handleRegister} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-slate-400 text-xs font-bold font-mono uppercase tracking-wider" htmlFor="username">
               Username
             </label>
             <input
               type="text"
               id="username"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-text leading-tight focus:outline-none focus:shadow-outline"
+              className="premium-input w-full font-mono text-sm"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               disabled={loading}
+              placeholder="new_operator_name"
+              required
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-text text-sm font-bold mb-2" htmlFor="password">
+
+          <div className="space-y-2">
+            <label className="block text-slate-400 text-xs font-bold font-mono uppercase tracking-wider" htmlFor="password">
               Password
             </label>
             <input
               type="password"
               id="password"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-text mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className="premium-input w-full font-mono text-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              placeholder="••••••••"
+              required
             />
           </div>
-          {error && <p className="text-error text-xs italic mb-4">{error}</p>}
-          {success && <p className="text-success text-xs italic mb-4">Registration successful! You can now log in.</p>}
-          <div className="flex items-center justify-between">
+
+          {error && (
+            <p className="text-red-400 text-xs font-mono bg-red-500/5 border border-red-500/10 p-3 rounded-xl text-left">
+              ✕ {error}
+            </p>
+          )}
+
+          {success && (
+            <p className="text-green-400 text-xs font-mono bg-green-500/5 border border-green-500/10 p-3 rounded-xl text-left">
+              ✓ Registration successful! Redirecting to login...
+            </p>
+          )}
+
+          <div className="flex flex-col gap-4 pt-2">
             <button
               type="submit"
-              className="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold transition-all uppercase tracking-wider text-xs shadow-lg shadow-violet-600/20 active:scale-95 disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? 'Registering...' : 'Create Account'}
             </button>
+            
             <div className="flex items-center my-1">
-              <div className="flex-grow border-t border-text/10"></div>
-              <span className="mx-4 text-[10px] text-text/30 font-mono tracking-widest">OR</span>
-              <div className="flex-grow border-t border-text/10"></div>
+              <div className="flex-grow border-t border-white/5"></div>
+              <span className="mx-4 text-[9px] text-slate-600 font-mono tracking-widest uppercase">OR</span>
+              <div className="flex-grow border-t border-white/5"></div>
             </div>
+            
             <button
               type="button"
               onClick={handleGuestLogin}
-              className="w-full border border-primary/40 text-primary hover:bg-primary/10 font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full border border-white/10 hover:border-violet-500/30 text-white py-4 rounded-2xl font-bold transition-all uppercase text-xs tracking-widest bg-slate-900/50 hover:bg-violet-600/10 disabled:opacity-50"
               disabled={loading}
             >
               Explore as Guest (Demo)

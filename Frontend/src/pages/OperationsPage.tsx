@@ -7,14 +7,14 @@ const OperationsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'control' | 'data' | 'legacy'>('control');
 
     return (
-        <div className="h-full animate-fade-in py-16 px-6 max-w-7xl mx-auto space-y-16">
-            <div>
-                <h1 className="text-5xl font-bold text-primary font-orbitron mb-4 uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(0,200,200,0.1)]">Active_Operations</h1>
-                <p className="text-text/30 font-mono text-xs tracking-[0.4em] uppercase">Command interface for plane-level manipulation and bridge synchronization.</p>
+        <div className="h-full animate-fade-in py-12 px-6 max-w-7xl mx-auto space-y-12">
+            <div className="text-left border-b border-white/5 pb-8">
+                <h1 className="text-4xl font-bold text-white font-space-grotesk tracking-tight">Active Operations</h1>
+                <p className="text-xs text-slate-500 font-mono mt-2 tracking-wider">COMMAND INTERFACE FOR PLANE-LEVEL MANIPULATION AND PEERING SYNCHRONIZATION</p>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2 mb-8 bg-black/40 p-1 rounded-xl border border-primary/10 w-fit">
+            {/* Tab Navigation (Figma styled pill switcher) */}
+            <div className="flex gap-2 p-1.5 bg-slate-900 border border-white/5 rounded-2xl w-fit">
                 {[
                     { id: 'control', label: 'Control Plane', icon: '🎮' },
                     { id: 'data', label: 'Data Plane', icon: '⚡' },
@@ -23,9 +23,9 @@ const OperationsPage: React.FC = () => {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`px-6 py-3 rounded-lg flex items-center gap-3 transition-all font-orbitron text-sm uppercase ${activeTab === tab.id
-                            ? 'bg-primary text-background shadow-lg shadow-primary/20'
-                            : 'text-text/60 hover:text-primary hover:bg-primary/5'
+                        className={`px-5 py-2.5 rounded-xl flex items-center gap-2.5 transition-all font-space-grotesk text-xs font-bold uppercase tracking-wider ${activeTab === tab.id
+                            ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <span>{tab.icon}</span>
@@ -38,28 +38,28 @@ const OperationsPage: React.FC = () => {
             <div className="min-h-[500px]">
                 {activeTab === 'control' && (
                     <div className="animate-fade-in space-y-6">
-                        <div className="bg-black/20 backdrop-blur-md p-8 rounded-3xl border border-primary/20 shadow-2xl">
+                        <div className="bg-slate-950/45 backdrop-blur-xl p-8 rounded-3xl border border-white/5 shadow-2xl">
                             <ControlPlane />
                         </div>
                     </div>
                 )}
                 {activeTab === 'data' && (
                     <div className="animate-fade-in space-y-6">
-                        <div className="bg-black/20 backdrop-blur-md p-8 rounded-3xl border border-primary/20 shadow-2xl">
+                        <div className="bg-slate-950/45 backdrop-blur-xl p-8 rounded-3xl border border-white/5 shadow-2xl">
                             <DataPlane />
                         </div>
                     </div>
                 )}
                 {activeTab === 'legacy' && (
                     <div className="animate-fade-in space-y-6">
-                        <div className="bg-black/20 backdrop-blur-md p-8 rounded-3xl border border-primary/20 shadow-2xl">
+                        <div className="bg-slate-950/45 backdrop-blur-xl p-8 rounded-3xl border border-white/5 shadow-2xl">
                             <LegacyIntegration />
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="mt-12 pt-8 border-t border-primary/10 text-xs text-text/30 font-mono flex justify-between">
+            <div className="mt-12 pt-6 border-t border-white/5 text-[10px] text-slate-500 font-mono flex justify-between">
                 <span>OPERATIONAL_STATUS: NOMINAL</span>
                 <span className="animate-pulse">● SIGNAL_CONNECTED</span>
                 <span>SYNC_LATENCY: 4ms</span>

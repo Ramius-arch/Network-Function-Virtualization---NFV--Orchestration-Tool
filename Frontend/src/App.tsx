@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -10,7 +10,8 @@ import TutorialOverlay from './components/TutorialOverlay';
 import AtomicMascot from './components/AtomicMascot';
 import AccessibilityPanel from './components/AccessibilityPanel';
 import FeedbackButton from './components/FeedbackButton';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import DashboardOverview from './pages/DashboardOverview';
 import TopologyPage from './pages/TopologyPage';
 import MonitoringPage from './pages/MonitoringPage';
@@ -19,8 +20,8 @@ import OperationsPage from './pages/OperationsPage';
 
 const AppContent: React.FC = () => {
   const { token, login } = useAuth();
-  const [isRegistering, setIsRegistering] = useState(true);
   const { startTutorial } = useTutorial();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (token) {
@@ -50,32 +51,69 @@ const AppContent: React.FC = () => {
     }
   }, [token, startTutorial]);
 
+  // Public routes for logged-out visitors
   if (!token) {
     return (
-      <div className="min-h-screen bg-background text-text flex flex-col items-center justify-center">
-        {isRegistering ? (
-          <Register onRegisterSuccess={() => setIsRegistering(false)} />
-        ) : (
-          <Login onLoginSuccess={login} />
-        )}
-        <button onClick={() => setIsRegistering(!isRegistering)} className="mt-4 text-primary hover:text-secondary hover-scale transition-all">
-          {isRegistering ? 'Already have an account? Login' : "Don't have an account? Register"}
-        </button>
-      </div>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route 
+          path="/login" 
+          element={
+            <div className="min-h-screen bg-background text-text flex flex-col items-center justify-center p-4">
+              <Login onLoginSuccess={login} />
+              <button 
+                onClick={() => navigate('/register')} 
+                className="mt-6 text-xs text-primary hover:underline font-mono uppercase tracking-widest"
+              >
+                Create a new account
+              </button>
+              <button 
+                onClick={() => navigate('/')} 
+                className="mt-4 text-xs text-text/40 hover:text-text font-mono uppercase tracking-widest"
+              >
+                Back to Story
+              </button>
+            </div>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <div className="min-h-screen bg-background text-text flex flex-col items-center justify-center p-4">
+              <Register onRegisterSuccess={() => navigate('/login')} />
+              <button 
+                onClick={() => navigate('/login')} 
+                className="mt-6 text-xs text-primary hover:underline font-mono uppercase tracking-widest"
+              >
+                Already have an account? Login
+              </button>
+              <button 
+                onClick={() => navigate('/')} 
+                className="mt-4 text-xs text-text/40 hover:text-text font-mono uppercase tracking-widest"
+              >
+                Back to Story
+              </button>
+            </div>
+          } 
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     );
   }
 
+  // Secure control plane routes for logged-in operators
   return (
     <div className="min-h-screen flex flex-col bg-background text-text transition-colors duration-300">
       <Navbar />
       <main className="flex-grow p-6 animate-fade-in container mx-auto">
         <Routes>
-          <Route path="/" element={<DashboardOverview />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/dashboard" element={<DashboardOverview />} />
           <Route path="/topology" element={<TopologyPage />} />
           <Route path="/monitoring" element={<MonitoringPage />} />
           <Route path="/provisioning" element={<ProvisioningPage />} />
           <Route path="/operations" element={<OperationsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
       <AtomicMascot />

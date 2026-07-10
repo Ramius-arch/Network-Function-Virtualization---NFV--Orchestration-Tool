@@ -76,27 +76,27 @@ Atomic simplifies network orchestration into an intuitive, three-step workflow:
 
 ## 🧬 System Architecture
 
-Atomic uses a modular **Multi-Page Architecture** built for reliability and scale, separating the presentation layer from the core orchestration logic.
+Atomic uses a modular, decoupled architecture separating the presentation layer from the core orchestration control plane.
 
 ```mermaid
 graph TD
-    A[Frontend Dashboard] --> B[Environment Context]
-    B -->|Live| C[Real-Time API]
-    B -->|Demo| D[Simulated Sandbox]
-    C --> E[NFV Control Plane]
-    C --> F[Resource Allocator]
-    E --> G[Virtual Network Functions]
+    A[Frontend Dashboard] -->|Authenticated REST| B[REST Gateway]
+    B --> C{VIM Factory}
+    C -->|MOCK_DATA=true| D[Mock VIM Provider]
+    C -->|MOCK_DATA=false| E[Docker VIM Provider]
+    E -->|REST via Unix Socket| F[Local Docker Engine]
+    B --> G[SDN Filter & Sanitizer]
 ```
 
-### 🛠️ Tech Stack
+### 🛠️ Tech Stack & Security Hardening
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 19, TypeScript, **Tailwind CSS**, Vite |
-| **Data Viz** | **XYFlow** (Topology UX), **Chart.js** (Telemetry) |
-| **Backend** | Node.js, Express, TypeScript |
-| **Security** | JWT Authentication, Context-based Access Control |
-| **Testing** | Jest (Backend), Vitest (Frontend) |
+| Layer | Technologies | Security Hardening |
+| :--- | :--- | :--- |
+| **Frontend** | React 19, TypeScript, Tailwind CSS, Vite | Token-auth headers, Error boundary filters |
+| **Data Viz** | XYFlow (Topology UX), Chart.js (Telemetry) | Dynamic data polling & local fallback interpolation |
+| **Backend** | Node.js, Express, TypeScript | Helmet headers, rate limiting, stateless registry |
+| **Automation** | Pluggable VIM (Docker Socket REST) | Parameter whitelists, CLI regex sanitization |
+| **Testing** | Jest (Backend), Vitest (Frontend) | Integration and mock contract validation |
 
 ---
 
@@ -128,6 +128,7 @@ npm run install-all
 Create a `.env` file in the `Backend/` directory with the following content:
 ```env
 MOCK_DATA=true          # Use `true` for Sandbox mode, `false` for Live mode
+VIM_PROVIDER=mock       # Target infrastructure: `mock` (sandbox simulator) or `docker` (local socket)
 JWT_SECRET=your_super_secret_key_here  # Replace with a strong, unique secret
 PORT=3000
 ```

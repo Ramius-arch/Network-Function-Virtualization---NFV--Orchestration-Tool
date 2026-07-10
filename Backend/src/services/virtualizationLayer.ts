@@ -1,31 +1,44 @@
-import { exec } from 'child_process';
+import { VIMFactory } from './vim/vimFactory.js';
+import { addFunction, getAllFunctions } from '../models/networkFunction.js';
 
-export const deployVirtualFunction = (functionName: string, image: string) => {
-  return new Promise((resolve, reject) => {
-    const command = `docker run -d --name ${functionName} ${image}`;
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error deploying virtual function: ${stderr}`);
-        reject(error);
-      } else {
-        console.log(`Virtual function deployed: ${stdout}`);
-        resolve(stdout);
-      }
+export const deployVirtualFunction = async (functionName: string, image: string) => {
+  try {
+    // 1. Persist the metadata into the database catalog model
+    const specs = { cpu: '2 Cores', memory: '4GB', image };
+    await addFunction(functionName, specs);
+
+    // 2. Delegate deployment to the configured active VIM provider
+    const provider = VIMFactory.getProvider();
+    const status = await provider.deployVNF(functionName, image, {
+      cpu: '2 Cores',
+      memory: '4GB'
     });
-  });
+
+    return status;
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error('[VirtualizationLayer] Deployment failed:', error.message);
+    throw error;
+  }
 };
 
-export const removeVirtualFunction = (functionName: string) => {
-  return new Promise((resolve, reject) => {
-    const command = `docker rm -f ${functionName}`;
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error removing virtual function: ${stderr}`);
-        reject(error);
-      } else {
-        console.log(`Virtual function removed: ${stdout}`);
-        resolve(stdout);
-      }
-    });
-  });
+export const removeVirtualFunction = async (functionName: string) => {
+  try {
+    // 1. Delegate termination to the active VIM provider
+    const provider = VIMFactory.getProvider();
+    const status = await provider.terminateVNF(functionName);
+
+    // 2. Clean up metadata by removing it from the network functions catalog array
+    const functions = await getAllFunctions();
+    const funcIndex = functions.findIndex((f) => f.functionName === functionName);
+    if (funcIndex !== -1) {
+      functions.splice(funcIndex, 1);
+    }
+
+    return status;
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error('[VirtualizationLayer] Removal failed:', error.message);
+    throw error;
+  }
 };

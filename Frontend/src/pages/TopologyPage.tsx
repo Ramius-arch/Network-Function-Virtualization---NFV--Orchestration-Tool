@@ -3,31 +3,31 @@ import NetworkTopology from '../components/NetworkTopology';
 
 const TopologyPage: React.FC = () => {
     return (
-        <div className="h-full flex flex-col gap-10 animate-fade-in py-10 max-w-7xl mx-auto">
-            <div className="flex justify-between items-end border-b border-primary/10 pb-8 px-2">
-                <div>
-                    <h1 className="text-5xl font-bold text-primary font-orbitron tracking-[0.2em] drop-shadow-[0_0_15px_rgba(0,200,200,0.1)]">NETWORK_TOPOLOGY</h1>
-                    <p className="text-xs text-text/30 font-mono uppercase mt-2 tracking-widest">Real-time Infrastructure Visualization HUB</p>
+        <div className="h-full flex flex-col gap-10 animate-fade-in py-12 px-6 max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-white/5 pb-8 gap-4">
+                <div className="text-left">
+                    <h1 className="text-4xl font-bold text-white font-space-grotesk tracking-tight">Network Topology</h1>
+                    <p className="text-xs text-slate-500 font-mono mt-2 tracking-wider">REAL-TIME INFRASTRUCTURE VISUALIZATION HUB</p>
                 </div>
-                <div className="px-6 py-2 bg-primary/5 border border-primary/20 rounded-full text-[10px] text-primary font-bold font-mono tracking-widest animate-pulse">
+                <div className="px-5 py-2 bg-violet-500/5 border border-violet-500/20 rounded-full text-[9px] text-violet-400 font-bold font-mono tracking-widest animate-pulse">
                     LIVE_FEED_ACTIVE
                 </div>
             </div>
 
-            <div className="flex-grow border border-primary/20 rounded-2xl overflow-hidden shadow-2xl bg-black/20 backdrop-blur-md relative min-h-[70vh]">
+            <div className="flex-grow border border-white/5 rounded-2xl overflow-hidden shadow-2xl bg-slate-950/40 backdrop-blur-md relative min-h-[70vh]">
                 <NetworkTopology />
             </div>
 
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { label: 'Active Nodes', value: '12', status: 'Healthy' },
                     { label: 'Edge Links', value: '45', status: 'Stable' },
                     { label: 'Cross-Domain Latency', value: '8ms', status: 'Optimal' }
                 ].map((stat, i) => (
-                    <div key={i} className="p-4 border border-primary/10 rounded-xl bg-black/30 backdrop-blur-sm">
-                        <p className="text-xs text-text/40 font-mono uppercase mb-1">{stat.label}</p>
-                        <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                        <p className="text-[10px] text-secondary mt-1">Status: {stat.status}</p>
+                    <div key={i} className="p-5 border border-white/5 rounded-2xl bg-slate-950/60 backdrop-blur-sm text-left">
+                        <p className="text-[10px] text-slate-500 font-mono uppercase mb-1">{stat.label}</p>
+                        <p className="text-2xl font-bold text-white font-space-grotesk">{stat.value}</p>
+                        <p className="text-[10px] text-green-500/80 font-bold mt-1">Status: {stat.status}</p>
                     </div>
                 ))}
             </div>

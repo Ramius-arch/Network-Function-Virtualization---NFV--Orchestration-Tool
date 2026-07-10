@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useEnvironment } from '../context/EnvironmentContext';
+import { fetchAPI } from '../utils/api';
 
 const ResourceAllocator: React.FC = () => {
-  const { isDemo } = useEnvironment();
+  const { envMode } = useEnvironment();
   const [functionName, setFunctionName] = useState('edge-compute-node-12');
   const [cpu, setCpu] = useState('8');
   const [memory, setMemory] = useState('32');
@@ -18,133 +19,150 @@ const ResourceAllocator: React.FC = () => {
   const handleAllocate = async () => {
     setLoading(true);
     setStatus('Negotiating hypervisor lease...');
-    setTimeout(() => {
-      setStatus(`Lease confirmed for ${functionName}. Reserved ${cpu}vCPU / ${memory}GB RAM.`);
+    try {
+      const data = await fetchAPI('/api/resource-allocator/allocate', {
+        method: 'POST',
+        body: JSON.stringify({ functionName, resources: { cpu, memory } }),
+      });
+      setStatus(`Lease confirmed for ${data.functionName || functionName}. Reserved ${data.allocatedCpu}vCPU / ${data.allocatedMemory} RAM. Status: ${data.status}`);
+    } catch (err: any) {
+      setStatus(`Lease negotiation failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1100);
+    }
   };
 
   const handleScale = async (direction: 'up' | 'down') => {
     setLoading(true);
     setStatus(`Attempting global resource ${direction}scale...`);
-    setTimeout(() => {
-      setStatus(`Topology re-balanced. ${functionName} ${direction}scaled successfully.`);
+    try {
+      const data = await fetchAPI('/api/resource-allocator/scale', {
+        method: 'POST',
+        body: JSON.stringify({ functionName, scale: direction }),
+      });
+      setStatus(`Topology re-balanced. ${data.functionName || functionName} scaled to ${data.allocatedCpu} / ${data.allocatedMemory} RAM. Status: ${data.status}`);
+    } catch (err: any) {
+      setStatus(`Scaling failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1300);
+    }
   };
 
   return (
-    <div className="relative">
-      <div className="p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-primary/20 shadow-2xl transition-all">
-        <h2 className={`text-3xl font-bold mb-8 font-orbitron uppercase tracking-widest text-center border-b border-primary/10 pb-4 ${isDemo ? 'text-amber-500' : 'text-primary'}`}>
-          {isDemo ? 'Virtual Resource Demo' : 'Resource Inventory Manager'}
-        </h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Allocator Controls */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] text-primary/60 uppercase font-bold ml-1 font-mono">RESERVATION_NAME</label>
-                <input
-                  type="text"
-                  className="p-4 border border-primary/20 rounded-xl bg-background/50 text-text w-full focus:border-primary outline-none transition-all font-mono"
-                  value={functionName}
-                  onChange={(e) => setFunctionName(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-primary/60 uppercase font-bold ml-1 font-mono">VCPU_COUNT</label>
-                  <input
-                    type="text"
-                    className="p-4 border border-primary/20 rounded-xl bg-background/50 text-text w-full focus:border-primary outline-none transition-all font-mono"
-                    value={cpu}
-                    onChange={(e) => setCpu(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-primary/60 uppercase font-bold ml-1 font-mono">RAM_QUOTA_GB</label>
-                  <input
-                    type="text"
-                    className="p-4 border border-primary/20 rounded-xl bg-background/50 text-text w-full focus:border-primary outline-none transition-all font-mono"
-                    value={memory}
-                    onChange={(e) => setMemory(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 space-y-4">
-                <button
-                  onClick={handleAllocate}
-                  disabled={loading}
-                  className={`w-full py-4 rounded-xl font-bold transition-all uppercase tracking-widest shadow-lg ${isDemo
-                      ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/10'
-                      : 'bg-primary text-background hover:bg-secondary shadow-primary/20'
-                    }`}
-                >
-                  {loading ? 'Negotiating...' : isDemo ? 'Simulate Reservation' : 'Reserve Physical Assets'}
-                </button>
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => handleScale('up')}
-                    disabled={loading}
-                    className={`flex-1 border py-3 rounded-xl font-bold transition-all uppercase text-xs tracking-widest ${isDemo ? 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10' : 'border-primary text-primary hover:bg-primary/10'
-                      }`}
-                  >
-                    Hot-Scale Up
-                  </button>
-                  <button
-                    onClick={() => handleScale('down')}
-                    disabled={loading}
-                    className="flex-1 border border-error/50 text-error/80 py-3 rounded-xl font-bold hover:bg-error/10 transition-all uppercase text-xs tracking-widest"
-                  >
-                    Scale Down
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Existing Reservations */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
-            <h3 className="text-xs font-bold text-text/40 uppercase font-mono tracking-widest ml-2">Active_Lease_Registry</h3>
-            <div className="space-y-4">
-              {mockAllocations.map(alloc => (
-                <div key={alloc.id} className={`p-4 bg-black/60 border rounded-2xl flex justify-between items-center transition-all cursor-crosshair ${isDemo ? 'border-amber-500/10 hover:border-amber-500/40' : 'border-primary/5 hover:border-primary/40'}`}>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-text font-orbitron">{alloc.name}</span>
-                    <span className="text-[9px] text-primary/40 font-mono italic">Tenant: {alloc.tenant}</span>
-                  </div>
-                  <div className="text-right flex flex-col items-end gap-1">
-                    <div className="flex gap-2">
-                      <span className="bg-primary/10 text-primary text-[8px] px-2 py-0.5 rounded border border-primary/20 uppercase font-mono">{alloc.cpu}</span>
-                      <span className="bg-secondary/10 text-secondary text-[8px] px-2 py-0.5 rounded border border-secondary/20 uppercase font-mono">{alloc.mem}</span>
-                    </div>
-                    <span className={`text-[8px] font-bold uppercase ${alloc.status === 'active' ? 'text-secondary' : 'text-accent'}`}>{alloc.status}</span>
-                  </div>
-                </div>
-              ))}
-              <div className={`mt-6 p-4 border rounded-xl ${isDemo ? 'bg-amber-500/5 border-amber-500/10' : 'bg-primary/5 border-primary/10'}`}>
-                <p className="text-[9px] text-primary font-mono lowercase mb-2">system_operation_output</p>
-                <p className="text-xs text-text/60 font-mono min-h-[40px]">
-                  {status ? `>> ${status}` : "AWAITING_INPUT_SIGNAL..."}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center border-b border-white/5 pb-4">
+        <div>
+          <h3 className="text-xl font-bold font-space-grotesk text-white">
+            {envMode === 'demo' ? 'Virtual Resource Allocation' : 'Resource Inventory Manager'}
+          </h3>
+          <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase mt-1">L1_HARDWARE_RESERVATION</p>
         </div>
+        {envMode === 'demo' && (
+          <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-bold font-mono px-2 py-0.5 rounded-full">
+            DEMO_MOCK
+          </span>
+        )}
       </div>
 
-      {isDemo && (
-        <div className="absolute inset-0 pointer-events-none border-2 border-amber-500/20 rounded-2xl overflow-hidden">
-          <div className="absolute bottom-4 right-4 bg-amber-500 text-black text-[8px] font-bold px-3 py-1 uppercase tracking-widest rounded shadow-xl">
-            DEMO_INSTANCE_PREVIEW
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Allocator Controls */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-1 text-left">
+              <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">RESERVATION_NAME</label>
+              <input
+                type="text"
+                className="premium-input w-full font-mono text-sm"
+                value={functionName}
+                onChange={(e) => setFunctionName(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1 text-left">
+                <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">VCPU_COUNT</label>
+                <input
+                  type="text"
+                  className="premium-input w-full font-mono text-sm"
+                  value={cpu}
+                  onChange={(e) => setCpu(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1 text-left">
+                <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">RAM_QUOTA_GB</label>
+                <input
+                  type="text"
+                  className="premium-input w-full font-mono text-sm"
+                  value={memory}
+                  onChange={(e) => setMemory(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 space-y-4">
+              <button
+                onClick={handleAllocate}
+                disabled={loading}
+                className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold transition-all uppercase tracking-wider text-xs shadow-lg shadow-violet-600/20 active:scale-95"
+              >
+                {loading ? 'Negotiating...' : 'Reserve Physical Assets'}
+              </button>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleScale('up')}
+                  disabled={loading}
+                  className="flex-1 border border-white/10 hover:border-violet-500/30 text-white py-3 rounded-2xl font-bold transition-all uppercase text-[10px] tracking-widest bg-slate-900/50 hover:bg-violet-600/10"
+                >
+                  Scale Up
+                </button>
+                <button
+                  onClick={() => handleScale('down')}
+                  disabled={loading}
+                  className="flex-1 border border-red-500/20 text-red-400 py-3 rounded-2xl font-bold hover:bg-red-600/10 transition-all uppercase text-[10px] tracking-widest bg-slate-900/50"
+                >
+                  Scale Down
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Existing Leases */}
+        <div className="lg:col-span-7 space-y-6">
+          <h4 className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-widest ml-1 text-left">Active_Lease_Registry</h4>
+          <div className="space-y-3">
+            {mockAllocations.map(alloc => (
+              <div 
+                key={alloc.id} 
+                className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex justify-between items-center hover:border-violet-500/30 transition-all duration-300"
+              >
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-bold text-white font-space-grotesk">{alloc.name}</span>
+                  <span className="text-[8px] text-slate-500 font-mono italic">Tenant: {alloc.tenant}</span>
+                </div>
+                <div className="text-right flex flex-col items-end gap-1.5">
+                  <div className="flex gap-2">
+                    <span className="bg-violet-500/10 text-violet-400 text-[8px] px-2 py-0.5 rounded-lg border border-violet-500/20 uppercase font-mono">{alloc.cpu}</span>
+                    <span className="bg-cyan-500/10 text-cyan-400 text-[8px] px-2 py-0.5 rounded-lg border border-cyan-500/20 uppercase font-mono">{alloc.mem}</span>
+                  </div>
+                  <span className={`text-[8px] font-bold uppercase tracking-wider ${alloc.status === 'active' ? 'text-green-400' : 'text-amber-400'}`}>{alloc.status}</span>
+                </div>
+              </div>
+            ))}
+            
+            {/* Telemetry output block */}
+            <div className="mt-6 p-4 border border-white/5 rounded-2xl bg-slate-950/80">
+              <p className="text-[8px] text-violet-400 font-mono lowercase mb-2 text-left">system_operation_output</p>
+              <p className="text-xs text-slate-400 font-mono min-h-[40px] text-left leading-relaxed">
+                {status ? `>> ${status}` : "AWAITING_INPUT_SIGNAL..."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

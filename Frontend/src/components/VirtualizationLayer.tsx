@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchAPI } from '../utils/api';
 
 const VirtualizationLayer: React.FC = () => {
   const [functionName, setFunctionName] = useState('ids-protection-cluster');
@@ -15,82 +16,108 @@ const VirtualizationLayer: React.FC = () => {
   const handleDeploy = async () => {
     setLoading(true);
     setStatus('Initializing hypervisor environment...');
-    setTimeout(() => {
-      setStatus(`Instance ${functionName} is LIVE. Image verified and entrypoint started.`);
+    try {
+      const data = await fetchAPI('/api/virtualization-layer/deploy', {
+        method: 'POST',
+        body: JSON.stringify({ functionName, image }),
+      });
+      setStatus(`Instance ${data.functionName || functionName} is LIVE. Status: ${data.status || 'deployed'}. Instance ID: ${data.instanceId || 'unknown'}`);
+    } catch (err: any) {
+      setStatus(`Deployment failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const handleRemove = async () => {
     setLoading(true);
     setStatus('Gracefully terminating container services...');
-    setTimeout(() => {
-      setStatus(`Resource cleanup complete. Instance ${functionName} purged.`);
+    try {
+      const data = await fetchAPI('/api/virtualization-layer/remove', {
+        method: 'POST',
+        body: JSON.stringify({ functionName }),
+      });
+      setStatus(`Resource cleanup complete. Instance ${data.functionName || functionName} purged. Status: ${data.status || 'removed'}`);
+    } catch (err: any) {
+      setStatus(`Termination failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
-    <div className="p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-secondary/20 shadow-2xl transition-all">
-      <h2 className="text-3xl font-bold mb-8 text-secondary font-orbitron uppercase tracking-widest text-center border-b border-secondary/10 pb-4">Hypervisor Layer Control</h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center border-b border-white/5 pb-4">
+        <div>
+          <h3 className="text-xl font-bold font-space-grotesk text-white">Hypervisor Layer Control</h3>
+          <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase mt-1">L2_HYPERVISOR_PROVISIONING</p>
+        </div>
+      </div>
 
-      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}
-        <div className="lg:col-span-12 space-y-8">
+        <div className="lg:col-span-12 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1">
-              <label className="text-[10px] text-secondary/60 uppercase font-bold ml-1">SYSTEM_INSTANCE_ID</label>
+            <div className="space-y-1 text-left">
+              <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">SYSTEM_INSTANCE_ID</label>
               <input
                 type="text"
-                className="p-4 border border-secondary/20 rounded-xl bg-background/50 text-text w-full focus:border-secondary outline-none transition-all font-mono"
+                className="premium-input w-full font-mono text-sm"
                 value={functionName}
                 onChange={(e) => setFunctionName(e.target.value)}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] text-secondary/60 uppercase font-bold ml-1">IMAGE_REGISTRY_PATH</label>
+            <div className="space-y-1 text-left">
+              <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">IMAGE_REGISTRY_PATH</label>
               <input
                 type="text"
-                className="p-4 border border-secondary/20 rounded-xl bg-background/50 text-text w-full focus:border-secondary outline-none transition-all font-mono text-sm"
+                className="premium-input w-full font-mono text-sm"
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <button
               onClick={handleDeploy}
               disabled={loading}
-              className="flex-[2] bg-secondary text-background py-4 rounded-xl font-bold hover:bg-primary transition-all uppercase tracking-widest shadow-lg shadow-secondary/20"
+              className="flex-[2] py-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-2xl font-bold transition-all uppercase tracking-wider text-xs shadow-lg shadow-cyan-600/20 active:scale-95"
             >
               {loading ? 'Spawning...' : 'Instantiate Virtual Function'}
             </button>
             <button
               onClick={handleRemove}
               disabled={loading}
-              className="flex-1 border border-error/50 text-error/80 py-4 rounded-xl font-bold hover:bg-error hover:text-white transition-all uppercase text-xs tracking-widest"
+              className="flex-1 border border-red-500/20 text-red-400 py-4 rounded-2xl font-bold hover:bg-red-600/10 transition-all uppercase text-xs tracking-wider bg-slate-900/50"
             >
-              {loading ? 'Killing...' : 'Terminate Node'}
+              {loading ? 'Purging...' : 'Terminate Node'}
             </button>
           </div>
         </div>
 
         {/* Instance Registry Table */}
-        <div className="lg:col-span-12">
-          <h3 className="text-xs font-bold text-text/40 uppercase font-mono tracking-widest mb-6 border-l-2 border-secondary pl-3">Virtualized_Instance_Registry</h3>
+        <div className="lg:col-span-12 space-y-4">
+          <h4 className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-widest ml-1 text-left">Virtualized_Instance_Registry</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {mockInstances.map(inst => (
-              <div key={inst.id} className="p-6 bg-black/60 rounded-3xl border border-secondary/5 hover:border-secondary/40 transition-all flex flex-col group">
+              <div 
+                key={inst.id} 
+                className="p-5 bg-slate-950/60 border border-white/5 rounded-2xl flex flex-col justify-between hover:border-cyan-500/30 transition-all duration-300 group"
+              >
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-sm font-bold font-orbitron uppercase text-text/90 group-hover:text-secondary transition-colors">{inst.name}</span>
-                  <div className={`w-2 h-2 rounded-full ${inst.status === 'running' ? 'bg-secondary animate-pulse shadow-[0_0_8px_#00FF00]' : 'bg-accent'}`}></div>
+                  <span className="text-sm font-bold font-space-grotesk text-white group-hover:text-cyan-400 transition-colors">{inst.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${inst.status === 'running' ? 'bg-green-400 animate-pulse shadow-[0_0_8px_#10B981]' : 'bg-amber-400'}`}></span>
+                  </div>
                 </div>
-                <div className="space-y-1 flex-grow">
-                  <p className="text-[9px] text-text/40 font-mono truncate">{inst.image}</p>
-                  <p className="text-[10px] text-secondary/60 font-bold uppercase tracking-widest">{inst.status}</p>
+                
+                <div className="space-y-1 text-left">
+                  <p className="text-[9px] text-slate-500 font-mono truncate">{inst.image}</p>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{inst.status}</p>
                 </div>
-                <div className="mt-4 pt-4 border-t border-secondary/5 flex justify-between items-center text-[9px] font-mono text-text/30">
+                
+                <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[9px] font-mono text-slate-500">
                   <span>ID: {inst.id}</span>
                   <span>Uptime: {inst.uptime}</span>
                 </div>
@@ -99,12 +126,11 @@ const VirtualizationLayer: React.FC = () => {
           </div>
 
           {status && (
-            <div className="mt-8 p-6 bg-secondary/5 border border-secondary/10 rounded-2xl animate-fade-in">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-1 h-3 bg-secondary rounded-full"></div>
-                <p className="text-[10px] text-secondary font-mono uppercase tracking-widest">hypervisor_service_callback</p>
-              </div>
-              <p className="text-xs text-text/80 font-mono italic">{`>>`} {status}</p>
+            <div className="mt-6 p-4 border border-white/5 rounded-2xl bg-slate-950/80">
+              <p className="text-[8px] text-cyan-400 font-mono lowercase mb-2 text-left">hypervisor_service_callback</p>
+              <p className="text-xs text-slate-400 font-mono min-h-[40px] text-left leading-relaxed">
+                {`>>`} {status}
+              </p>
             </div>
           )}
         </div>

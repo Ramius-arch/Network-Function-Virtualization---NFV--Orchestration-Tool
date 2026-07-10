@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useEnvironment } from '../context/EnvironmentContext';
+import { fetchAPI } from '../utils/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -60,7 +61,7 @@ const generateMockChartData = (funcName: string, count: number = 20) => {
 };
 
 const Monitoring: React.FC = () => {
-  const { isDemo } = useEnvironment();
+  const { envMode } = useEnvironment();
   const [functionName, setFunctionName] = useState('Firewall');
   const [chartData, setChartData] = useState<Metric[]>([]);
   const [loading, setLoading] = useState(false);
@@ -80,11 +81,20 @@ const Monitoring: React.FC = () => {
     ];
     setTacticalLogs(initialLogs);
 
-    const interval = setInterval(() => {
-      setChartData((prevData) => {
-        const newDataPoint = generateMockChartData(functionName, 1)[0];
-        return [...prevData.slice(1), newDataPoint];
-      });
+    const fetchLatestMetric = async () => {
+      try {
+        const data = await fetchAPI(`/api/monitoring/metrics/${functionName}`);
+        setChartData((prevData) => {
+          const sliceIndex = prevData.length >= 20 ? 1 : 0;
+          return [...prevData.slice(sliceIndex), data];
+        });
+      } catch (err) {
+        console.warn('API error fetching metrics, falling back to simulation data.', err);
+        setChartData((prevData) => {
+          const newDataPoint = generateMockChartData(functionName, 1)[0];
+          return [...prevData.slice(1), newDataPoint];
+        });
+      }
 
       // Randomized log entries
       if (Math.random() > 0.7) {
@@ -97,7 +107,10 @@ const Monitoring: React.FC = () => {
         const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
         setTacticalLogs(prev => [event, ...prev.slice(0, 15)]);
       }
-    }, 5000);
+    };
+
+    fetchLatestMetric();
+    const interval = setInterval(fetchLatestMetric, 5000);
 
     return () => clearInterval(interval);
   }, [functionName]);
@@ -105,10 +118,22 @@ const Monitoring: React.FC = () => {
   const fetchMetrics = async () => {
     setLoading(true);
     setStatus(`Force syncing ${functionName} telemetry...`);
-    setTimeout(() => {
+    try {
+      const data = await fetchAPI(`/api/monitoring/metrics/${functionName}`);
+      setChartData((prevData) => {
+        const sliceIndex = prevData.length >= 20 ? 1 : 0;
+        return [...prevData.slice(sliceIndex), data];
+      });
       setStatus('Live sync successful.');
+    } catch (err: any) {
+      setStatus(`Sync failed: ${err.message}. Using simulated data.`);
+      setChartData((prevData) => {
+        const newDataPoint = generateMockChartData(functionName, 1)[0];
+        return [...prevData.slice(1), newDataPoint];
+      });
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const chartJsData = {
@@ -117,8 +142,8 @@ const Monitoring: React.FC = () => {
       {
         label: 'CPU Usage (%)',
         data: chartData.map((d) => parseInt(d.cpuUsage || '0')),
-        borderColor: '#00FFFF',
-        backgroundColor: 'rgba(0, 255, 255, 0.15)',
+        borderColor: '#8B5CF6', // Violet
+        backgroundColor: 'rgba(139, 92, 246, 0.15)',
         tension: 0.3,
         fill: true,
         pointRadius: 0,
@@ -126,16 +151,16 @@ const Monitoring: React.FC = () => {
       {
         label: 'Memory Intensity',
         data: chartData.map((d) => parseFloat(d.memoryUsage || '0') * (d.memoryUsage?.includes('GB') ? 10 : 0.01)),
-        borderColor: '#00FF00',
-        backgroundColor: 'rgba(0, 255, 0, 0.05)',
+        borderColor: '#10B981', // Emerald
+        backgroundColor: 'rgba(16, 185, 129, 0.05)',
         tension: 0.3,
         pointRadius: 0,
       },
       {
         label: 'Traffic Flow',
         data: chartData.map((d) => parseFloat(d.networkThroughput || '0') * (d.networkThroughput?.includes('Gbps') ? 10 : 1)),
-        borderColor: '#FF00FF',
-        backgroundColor: 'rgba(255, 0, 255, 0.05)',
+        borderColor: '#06B6D4', // Cyan
+        backgroundColor: 'rgba(6, 182, 212, 0.05)',
         tension: 0.3,
         pointRadius: 0,
       },
@@ -146,40 +171,41 @@ const Monitoring: React.FC = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' as const, labels: { color: '#E0FFFF', font: { family: 'Orbitron', size: 10 } } },
-      tooltip: { backgroundColor: 'rgba(1, 11, 19, 0.9)', borderColor: '#00FFFF', borderWidth: 1 },
+      legend: { position: 'top' as const, labels: { color: '#F8FAFC', font: { family: 'Space Grotesk', size: 10 } } },
+      tooltip: { backgroundColor: 'rgba(3, 7, 18, 0.95)', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 },
     },
     scales: {
-      x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.4)', font: { size: 9 } } },
-      y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.4)', font: { size: 9 } } },
+      x: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: 'rgba(255, 255, 255, 0.3)', font: { size: 9 } } },
+      y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: 'rgba(255, 255, 255, 0.3)', font: { size: 9 } } },
     },
   };
 
   return (
-    <div className="p-6 bg-black/40 backdrop-blur-md rounded-2xl border border-primary/20 shadow-2xl flex flex-col h-[700px] hover-glow transition-all">
-      <div className="flex justify-between items-end mb-8 border-b border-primary/10 pb-4">
-        <div>
-          <h2 className={`text-3xl font-bold font-orbitron uppercase tracking-widest ${isDemo ? 'text-amber-500' : 'text-primary'}`}>
-            {isDemo ? 'Simulation HUB' : 'Telemetry HUB'}
+    <div className="p-6 bg-slate-950/60 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl flex flex-col h-[700px] hover:border-violet-500/30 transition-all duration-300 relative">
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/5 pb-4 gap-4">
+        <div className="text-left">
+          <h2 className="text-2xl font-bold font-space-grotesk text-white">
+            {envMode === 'demo' ? 'Simulation HUB' : 'Telemetry HUB'}
           </h2>
-          <p className="text-[10px] text-text/30 font-mono mt-1">
-            {isDemo ? 'MODE: SIMULATED_PLAYGROUND_ACTIVE' : 'MODE: REAL_TIME_INFRASTRUCTURE_STREAM'}
+          <p className="text-[10px] text-slate-500 font-mono mt-1">
+            {envMode === 'demo' ? 'MODE: SIMULATED_PLAYGROUND_ACTIVE' : 'MODE: REAL_TIME_INFRASTRUCTURE_STREAM'}
           </p>
         </div>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center w-full sm:w-auto">
           <select
             value={functionName}
             onChange={(e) => setFunctionName(e.target.value)}
-            className="bg-primary/10 border border-primary/30 rounded px-4 py-2 text-xs font-bold text-primary outline-none hover:bg-primary/20 cursor-pointer transition-all uppercase font-orbitron"
+            className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-slate-200 outline-none hover:bg-slate-800 cursor-pointer transition-all uppercase font-space-grotesk"
           >
             {Object.keys(VNF_PROFILES).map(name => <option key={name} value={name}>{name}</option>)}
           </select>
           <button
             onClick={fetchMetrics}
-            className="p-2 border border-primary/30 rounded hover:bg-primary/20 text-primary transition-all"
+            className="p-2.5 bg-slate-900 border border-white/10 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-all"
             title="Force Refresh"
           >
-            <span className={loading ? 'animate-spin block' : ''}>🔄</span>
+            <span className={loading ? 'animate-spin block' : 'block'}>🔄</span>
           </button>
         </div>
       </div>
@@ -189,58 +215,49 @@ const Monitoring: React.FC = () => {
         <div className="lg:col-span-4 flex flex-col gap-6">
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 border border-primary/10 bg-primary/5 rounded-xl">
-              <p className="text-[9px] text-primary/60 font-mono uppercase mb-1">CPU_LOAD</p>
-              <p className="text-2xl font-bold font-orbitron">{chartData[chartData.length - 1]?.cpuUsage}</p>
+            <div className="p-4 border border-white/5 bg-violet-500/5 rounded-2xl text-left">
+              <p className="text-[9px] text-violet-400 font-mono uppercase mb-1">CPU_LOAD</p>
+              <p className="text-2xl font-bold font-space-grotesk text-white">{chartData[chartData.length - 1]?.cpuUsage}</p>
             </div>
-            <div className="p-4 border border-secondary/10 bg-secondary/5 rounded-xl">
-              <p className="text-[9px] text-secondary/60 font-mono uppercase mb-1">MEM_ALLOC</p>
-              <p className="text-2xl font-bold font-orbitron">{chartData[chartData.length - 1]?.memoryUsage}</p>
+            <div className="p-4 border border-white/5 bg-emerald-500/5 rounded-2xl text-left">
+              <p className="text-[9px] text-emerald-400 font-mono uppercase mb-1">MEM_ALLOC</p>
+              <p className="text-2xl font-bold font-space-grotesk text-white">{chartData[chartData.length - 1]?.memoryUsage}</p>
             </div>
           </div>
 
           {/* Tactical Logs */}
-          <div className="flex-grow flex flex-col bg-black/40 rounded-xl border border-primary/5 overflow-hidden">
-            <div className="bg-primary/10 p-2 px-4 flex justify-between items-center">
-              <span className="text-[10px] font-bold text-primary font-mono lowercase">tactical_events.log</span>
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          <div className="flex-grow flex flex-col bg-slate-950/80 rounded-2xl border border-white/5 overflow-hidden">
+            <div className="bg-slate-900/60 p-3 px-4 flex justify-between items-center border-b border-white/5">
+              <span className="text-[10px] font-bold text-slate-400 font-mono">tactical_events.log</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></span>
             </div>
-            <div className="flex-grow p-4 font-mono text-[10px] space-y-2 overflow-y-auto custom-scrollbar">
+            <div className="flex-grow p-4 font-mono text-[10px] space-y-2.5 overflow-y-auto custom-scrollbar text-left">
               {tacticalLogs.map((log, i) => (
-                <div key={i} className={`animate-fade-in ${log.includes('[OK]') ? 'text-secondary/70' : log.includes('[WARN]') ? 'text-accent' : 'text-text/50'}`}>
+                <div key={i} className={`animate-fade-in ${log.includes('[OK]') ? 'text-green-400/80' : log.includes('[WARN]') ? 'text-amber-400' : 'text-slate-500'}`}>
                   {log}
                 </div>
               ))}
             </div>
           </div>
 
-          {status && <div className="text-[9px] text-primary font-mono animate-pulse uppercase tracking-widest">{status}</div>}
+          {status && <div className="text-[9px] text-violet-400 font-mono animate-pulse uppercase tracking-widest text-left">{status}</div>}
         </div>
 
         {/* Right Column: High Res Chart */}
-        <div className="lg:col-span-8 bg-black/20 rounded-2xl border border-primary/5 p-6 relative flex flex-col">
-          <div className="absolute top-4 right-6 text-[8px] text-text/20 font-mono">
+        <div className="lg:col-span-8 bg-slate-900/10 rounded-2xl border border-white/5 p-6 relative flex flex-col justify-between">
+          <div className="absolute top-4 right-6 text-[8px] text-slate-500 font-mono">
             REFRESH_RATE: 5000MS // ENCRYPTION: GCM-A
           </div>
-          <div className="flex-grow">
+          <div className="flex-grow h-full min-h-[350px]">
             <Line data={chartJsData} options={chartJsOptions} />
           </div>
-          <div className="mt-4 flex justify-between items-center text-[9px] text-text/30 font-mono uppercase border-t border-primary/5 pt-4">
+          <div className="mt-4 flex justify-between items-center text-[9px] text-slate-500 font-mono uppercase border-t border-white/5 pt-4">
             <span>Historical_Buffer: 2hrs</span>
             <span>X-Axis: Real_Time_Standard</span>
             <span>Y-Axis: Relative_Intensity [0-100]</span>
           </div>
         </div>
       </div>
-
-      {isDemo && (
-        <div className="absolute inset-0 pointer-events-none border-4 border-amber-500/20 rounded-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 bg-amber-500 text-black text-[10px] font-bold px-4 py-1 uppercase tracking-widest animate-pulse">
-            Demo Section // Showing All Components
-          </div>
-          <div className="absolute inset-0 bg-amber-500/5 [background:repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(245,158,11,0.05)_20px,rgba(245,158,11,0.05)_40px)]"></div>
-        </div>
-      )}
     </div>
   );
 };

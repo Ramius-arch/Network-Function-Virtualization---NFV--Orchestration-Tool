@@ -1,15 +1,11 @@
 import type { Request, Response } from 'express';
-import dotenv from 'dotenv';
-import * as realService from '../services/virtualizationLayer.js';
-import * as mockService from '../services/mock/virtualizationLayerMock.js';
-
-dotenv.config();
-
-const isMockingEnabled = process.env.MOCK_DATA === 'true';
-const virtualizationLayerService = isMockingEnabled ? mockService : realService;
+import * as virtualizationLayerService from '../services/virtualizationLayer.js';
 
 export const deploy = async (req: Request, res: Response) => {
   const { functionName, image } = req.body;
+  if (!functionName || !image || typeof functionName !== 'string' || typeof image !== 'string') {
+    return res.status(400).json({ message: 'Valid functionName and image parameters are required' });
+  }
   try {
     const result = await virtualizationLayerService.deployVirtualFunction(functionName, image);
     res.status(201).json(result);
@@ -21,6 +17,9 @@ export const deploy = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
   const { functionName } = req.body;
+  if (!functionName || typeof functionName !== 'string') {
+    return res.status(400).json({ message: 'Valid functionName parameter is required' });
+  }
   try {
     const result = await virtualizationLayerService.removeVirtualFunction(functionName);
     res.status(200).json(result);

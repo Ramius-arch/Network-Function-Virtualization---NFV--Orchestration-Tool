@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useEnvironment } from '../context/EnvironmentContext';
+import { fetchAPI } from '../utils/api';
 
 const ControlPlane: React.FC = () => {
-  const { isDemo } = useEnvironment();
+  const { envMode } = useEnvironment();
   const [functionName, setFunctionName] = useState('firewall-v1');
   const [config, setConfig] = useState(JSON.stringify({
     "rules": [
@@ -27,17 +28,33 @@ const ControlPlane: React.FC = () => {
   const handleConfigure = async () => {
     setLoading(true);
     setStatus('Pushing configuration to edge nodes...');
-    setTimeout(() => {
-      setStatus('Configuration propagated successfully across 4 shards.');
+    try {
+      let parsedConfig = {};
+      try {
+        parsedConfig = JSON.parse(config);
+      } catch (e) {
+        throw new Error('Invalid JSON configuration');
+      }
+      const data = await fetchAPI('/api/control-plane/configure', {
+        method: 'POST',
+        body: JSON.stringify({ functionName, config: parsedConfig }),
+      });
+      setStatus(`Configuration propagated successfully for ${data.functionName || functionName}.`);
+    } catch (err: any) {
+      setStatus(`Configuration failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const handleGetState = async () => {
     setLoading(true);
     setStatus('Polling remote state sensors...');
-    setTimeout(() => {
-      setFunctionState({
+    try {
+      const data = await fetchAPI(`/api/control-plane/state/${functionName}`, {
+        method: 'GET',
+      });
+      setFunctionState(data.state || {
         "node_id": `${functionName}-primary`,
         "uptime": "0d 0h 15m",
         "policy_version": "custom-rc1",
@@ -45,89 +62,92 @@ const ControlPlane: React.FC = () => {
         "last_sync": new Date().toISOString()
       });
       setStatus(`State data synchronized for ${functionName}.`);
+    } catch (err: any) {
+      setStatus(`Query failed: ${err.message}`);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
-    <div className="relative">
-      <div className="p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-primary/20 shadow-2xl transition-all">
-        <h2 className={`text-3xl font-bold mb-8 font-orbitron uppercase tracking-widest text-center border-b border-primary/10 pb-4 ${isDemo ? 'text-amber-500' : 'text-primary'}`}>
-          {isDemo ? 'Control Plane Simulation' : 'Control Plane Manager'}
-        </h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center border-b border-white/5 pb-4">
+        <div>
+          <h3 className="text-xl font-bold font-space-grotesk text-white">
+            {envMode === 'demo' ? 'Control Plane Simulation' : 'Control Plane Manager'}
+          </h3>
+          <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase mt-1">L4_ROUTING_GATEWAYS</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs text-primary/60 uppercase font-bold ml-1 font-mono">TARGET_FUNCTION_NAME</label>
-              <input
-                type="text"
-                placeholder="e.g. firewall-service-alpha"
-                className="p-4 border border-primary/20 rounded-xl bg-background/50 text-text w-full focus:border-primary outline-none transition-all font-mono text-sm"
-                value={functionName}
-                onChange={(e) => setFunctionName(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs text-primary/60 uppercase font-bold ml-1 font-mono">JSON_CONFIGURATION_BLOAD</label>
-              <textarea
-                className="p-4 border border-primary/20 rounded-xl bg-background/50 text-text w-full h-64 focus:border-primary outline-none transition-all font-mono text-sm resize-none custom-scrollbar"
-                value={config}
-                onChange={(e) => setConfig(e.target.value)}
-              ></textarea>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <button
-                onClick={handleConfigure}
-                disabled={loading}
-                className={`py-4 rounded-xl font-bold transition-all uppercase tracking-widest shadow-lg ${isDemo ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/10' : 'bg-primary text-background hover:bg-secondary shadow-primary/10'
-                  }`}
-              >
-                {loading ? 'Propagating...' : isDemo ? 'Simulate Commit' : 'Commit Changes'}
-              </button>
-              <button
-                onClick={handleGetState}
-                disabled={loading}
-                className={`border py-4 rounded-xl font-bold transition-all uppercase tracking-widest ${isDemo ? 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10' : 'border-primary/50 text-primary hover:bg-primary/10'
-                  }`}
-              >
-                {loading ? 'Interrogating...' : 'Query Sensor State'}
-              </button>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Left Column: Form Controls */}
+        <div className="space-y-6">
+          <div className="space-y-1 text-left">
+            <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">TARGET_FUNCTION_NAME</label>
+            <input
+              type="text"
+              placeholder="e.g. firewall-service-alpha"
+              className="premium-input w-full font-mono text-sm"
+              value={functionName}
+              onChange={(e) => setFunctionName(e.target.value)}
+            />
           </div>
 
-          <div className="space-y-6">
-            <div className="p-6 bg-black/60 rounded-2xl border border-primary/5 h-full flex flex-col">
-              <h3 className={`text-lg font-bold mb-4 font-orbitron uppercase border-b pb-2 ${isDemo ? 'text-amber-500 border-amber-500/10' : 'text-secondary border-secondary/10'}`}>
+          <div className="space-y-1 text-left">
+            <label className="text-[9px] text-slate-400 uppercase font-bold ml-1 font-mono">JSON_CONFIGURATION_BLOB</label>
+            <textarea
+              className="premium-input w-full h-64 font-mono text-sm resize-none custom-scrollbar"
+              value={config}
+              onChange={(e) => setConfig(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <button
+              onClick={handleConfigure}
+              disabled={loading}
+              className="py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold transition-all uppercase tracking-wider text-xs shadow-lg shadow-violet-600/20 active:scale-95"
+            >
+              {loading ? 'Propagating...' : 'Commit Changes'}
+            </button>
+            <button
+              onClick={handleGetState}
+              disabled={loading}
+              className="border border-white/10 hover:border-violet-500/30 text-white py-4 rounded-2xl font-bold transition-all uppercase text-[10px] tracking-widest bg-slate-900/50 hover:bg-violet-600/10"
+            >
+              {loading ? 'Interrogating...' : 'Query Sensor State'}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: State Dump */}
+        <div className="space-y-6">
+          <div className="p-6 bg-slate-950/60 rounded-2xl border border-white/5 h-full flex flex-col justify-between">
+            <div>
+              <h4 className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-widest border-b border-white/5 pb-2 text-left">
                 Operational_State_Dump
-              </h3>
-              <div className="flex-grow space-y-4 overflow-y-auto custom-scrollbar pr-2 min-h-[300px]">
-                <div className="animate-fade-in">
-                  <pre className={`text-xs bg-black/30 p-6 rounded-xl border font-mono overflow-auto max-h-[450px] ${isDemo ? 'text-amber-500/80 border-amber-500/10' : 'text-secondary/90 border-secondary/10'}`}>
+              </h4>
+              <div className="flex-grow space-y-4 overflow-y-auto custom-scrollbar pr-2 mt-4 min-h-[300px]">
+                <div className="animate-fade-in text-left">
+                  <pre className="text-xs bg-slate-900/40 p-5 rounded-2xl border border-white/5 font-mono overflow-auto max-h-[400px] text-green-400/90">
                     {JSON.stringify(functionState, null, 2)}
                   </pre>
                 </div>
               </div>
-              {status && (
-                <div className="mt-4 pt-4 border-t border-primary/10 flex items-center gap-3">
-                  <div className={`w-1 h-1 rounded-full animate-ping ${isDemo ? 'bg-amber-500' : 'bg-primary'}`}></div>
-                  <p className="text-[10px] text-text/50 font-mono truncate">{status}</p>
-                </div>
-              )}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {isDemo && (
-        <div className="absolute inset-x-0 bottom-[-20px] pointer-events-none flex justify-center">
-          <div className="bg-amber-500 text-black text-[9px] font-black px-8 py-1 uppercase tracking-[0.5em] rounded-b-xl shadow-xl border-t border-black/20">
-            Simulation_Mode_Active
+            {status && (
+              <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full animate-ping bg-violet-500"></div>
+                <p className="text-[9px] text-slate-500 font-mono truncate">{status}</p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+
+      </div>
     </div>
   );
 };
