@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useEnvironment } from '../context/EnvironmentContext';
 import { fetchAPI } from '../utils/api';
+import { useNotifications } from '../context/NotificationContext';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -43,6 +44,7 @@ const VNF_PROFILES: Record<string, { cpuRange: [number, number], memRange: [numb
 
 const Monitoring: React.FC = () => {
   const { envMode } = useEnvironment();
+  const { addAlert } = useNotifications();
   const [functionName, setFunctionName] = useState('Firewall');
   const [chartData, setChartData] = useState<Metric[]>([]);
   const [status, setStatus] = useState('');
@@ -191,10 +193,34 @@ const Monitoring: React.FC = () => {
       setCustomTrafficMultiplier(1);
       setCustomMemoryLimit(1);
       setStatus('Scenario updated: Nominal Operations.');
+      addAlert({
+        title: 'Nominal State Restored',
+        type: 'success',
+        cause: 'Manual override: System health parameters set to default operator limits.',
+        nextStep: 'Monitor traffic paths on the Network Topology page to verify link balancing.',
+        link: '/topology',
+        linkText: 'Inspect Network Topology'
+      });
     } else if (scenario === 'ddos') {
       setStatus('Alert! Simulating DDoS Stress Test...');
+      addAlert({
+        title: 'DDoS Stress Test Initiated',
+        type: 'error',
+        cause: 'Traffic overload: Inbound ingress bandwidth has spiked past 5.5Gb/s threshold.',
+        nextStep: 'Deploy a new Load Balancer or apply rate-limiting policy parameters in the Control Plane.',
+        link: '/operations',
+        linkText: 'Configure Control Plane'
+      });
     } else if (scenario === 'failover') {
       setStatus('Warning! Simulating Core Node Outage Failover...');
+      addAlert({
+        title: 'Primary Core Outage Detected',
+        type: 'warning',
+        cause: 'Heartbeat failure: Primary VNF firewall-v1 dropped offline (failed health checks).',
+        nextStep: 'Reroute dynamic data plane links through standby node firewall-v2.',
+        link: '/topology',
+        linkText: 'Re-route Topology Link'
+      });
     }
   };
 

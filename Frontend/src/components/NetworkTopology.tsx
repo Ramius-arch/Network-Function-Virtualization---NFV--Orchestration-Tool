@@ -17,6 +17,7 @@ import '@xyflow/react/dist/style.css';
 import NodeTooltip from './NodeTooltip';
 import { useEnvironment } from '../context/EnvironmentContext';
 import { fetchAPI } from '../utils/api';
+import { useNotifications } from '../context/NotificationContext';
 
 // --- BASELINE NETWORK NODES ---
 const baselineNodes: Node[] = [
@@ -262,6 +263,7 @@ const baselineEdges: Edge[] = [
 
 const NetworkTopology: React.FC = () => {
   const { envMode } = useEnvironment();
+  const { addAlert } = useNotifications();
   
   // States
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(baselineNodes);
@@ -446,13 +448,43 @@ const NetworkTopology: React.FC = () => {
 
     // Reset Name
     setSpawnName(`vnf-${spawnType.toLowerCase()}-${Math.floor(Math.random() * 90 + 10)}`);
+
+    addAlert({
+      title: `${spawnType} Spawned Successfully`,
+      type: 'success',
+      cause: `Operator action: Dynamic VNF [${spawnName}] provisioned onto the localized edge hypervisor.`,
+      nextStep: 'Drag network flow links on the topology screen to route active traffic through this node.',
+      link: '/topology',
+      linkText: 'Inspect Live Links'
+    });
   };
 
   // Node actions (Inject Fault / Terminate)
   const handleToggleFault = () => {
     if (!selectedNode) return;
-    const isError = selectedNode.data.status === 'error';
+    const isError = (selectedNode.data as any).status === 'error';
     const newStatus = isError ? 'active' : 'error';
+
+    // Dispatch toast alert
+    if (newStatus === 'error') {
+      addAlert({
+        title: 'VNF Service Health Failure',
+        type: 'error',
+        cause: `Manual fault injection: [${(selectedNode.data as any).label}] has transitioned to an error state. Packet loss is active.`,
+        nextStep: 'Configure routing policy parameters in the Control Plane or scale up core hypervisor nodes.',
+        link: '/operations',
+        linkText: 'Apply Control Policies'
+      });
+    } else {
+      addAlert({
+        title: 'VNF Service Restored',
+        type: 'success',
+        cause: `Manual restoration: [${(selectedNode.data as any).label}] health state was successfully recovered.`,
+        nextStep: 'Review real-time CPU and throughput flow metrics inside the Telemetry Hub.',
+        link: '/monitoring',
+        linkText: 'Open Telemetry Hub'
+      });
+    }
 
     // Update Node State
     setNodes(prevNodes => 
@@ -522,6 +554,16 @@ const NetworkTopology: React.FC = () => {
       }
     } catch (e) {}
 
+    addAlert({
+      title: 'VNF Resource Terminated',
+      type: 'warning',
+      cause: `Operator directive: container instances and network bridge gateways released for [${(selectedNode.data as any).label}].`,
+      nextStep: 'Instantiate replacement virtual functions on the Provisioning page if capacity is degraded.',
+      link: '/provisioning',
+      linkText: 'Provision New VNF'
+    });
+
+    // Update selection ref
     setSelectedNode(null);
   };
 

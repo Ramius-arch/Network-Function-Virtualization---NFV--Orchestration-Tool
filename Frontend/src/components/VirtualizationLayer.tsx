@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAPI } from '../utils/api';
+import { useNotifications } from '../context/NotificationContext';
 
 const VirtualizationLayer: React.FC = () => {
+  const { addAlert } = useNotifications();
   const [functionName, setFunctionName] = useState('ids-protection-cluster');
   const [image, setImage] = useState('registry.atomic.internal/sec/ips-v2.1:latest');
   const [status, setStatus] = useState('');
@@ -84,6 +86,14 @@ const VirtualizationLayer: React.FC = () => {
       setCustomInstances(updated);
 
       setStatus(`Deployment successful! Virtual function ${functionName} is live. Hypervisor callback returned Instance ID: ${newInst.id}`);
+      addAlert({
+        title: 'VNF Provisioned Successfully',
+        type: 'success',
+        cause: `Hypervisor allocation: Allocated RAM/vCPU slices for [${functionName}] matching registry requirements.`,
+        nextStep: 'Access the Network Topology page to inspect the new node and configure traffic flows.',
+        link: '/topology',
+        linkText: 'Open Network Topology'
+      });
     } catch (err: any) {
       console.warn('API deploy failed, running local sandbox deployment.', err);
       
@@ -103,6 +113,14 @@ const VirtualizationLayer: React.FC = () => {
       setCustomInstances(updated);
 
       setStatus(`[SANDBOX SUCCESS] Virtual function ${functionName} deployed to local mock hypervisor. Instance ID: ${newInst.id}`);
+      addAlert({
+        title: 'VNF Sandbox Provisioned',
+        type: 'success',
+        cause: `Hypervisor simulation: Container instance [${functionName}] spin-up verified on mock node.`,
+        nextStep: 'Access the Network Topology page to inspect the node and configure dynamic flow links.',
+        link: '/topology',
+        linkText: 'Open Network Topology'
+      });
     } finally {
       setLoading(false);
       setDeployStep(-1);
@@ -130,6 +148,14 @@ const VirtualizationLayer: React.FC = () => {
       setCustomInstances(updated);
 
       setStatus(`Resource termination complete. Instance ${functionName} purged from catalog.`);
+      addAlert({
+        title: 'VNF Terminated Gracefully',
+        type: 'warning',
+        cause: `Operator directive: Hypervisor container interfaces for [${functionName}] have been cleared.`,
+        nextStep: 'Spin up alternative capacities on the Provisioning tab if operational targets are under-allocated.',
+        link: '/provisioning',
+        linkText: 'Provision New Service'
+      });
     } catch (err: any) {
       console.warn('API remove failed, running local sandbox cleanup.', err);
 
@@ -138,6 +164,14 @@ const VirtualizationLayer: React.FC = () => {
       setCustomInstances(updated);
 
       setStatus(`[SANDBOX OK] Resource cleanup complete. Instance ${functionName} released from hypervisor pool.`);
+      addAlert({
+        title: 'VNF Sandbox Released',
+        type: 'warning',
+        cause: `Operator directive: local sandbox simulation container [${functionName}] was cleanly purged.`,
+        nextStep: 'Spin up alternative capacities on the Provisioning tab if operational targets are under-allocated.',
+        link: '/provisioning',
+        linkText: 'Provision New Service'
+      });
     } finally {
       setLoading(false);
     }

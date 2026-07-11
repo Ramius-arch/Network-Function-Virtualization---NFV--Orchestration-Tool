@@ -17,6 +17,8 @@ import TopologyPage from './pages/TopologyPage';
 import MonitoringPage from './pages/MonitoringPage';
 import ProvisioningPage from './pages/ProvisioningPage';
 import OperationsPage from './pages/OperationsPage';
+import { NotificationProvider } from './context/NotificationContext';
+import GlobalToasts from './components/GlobalToasts';
 
 const AppContent: React.FC = () => {
   const { token, login } = useAuth();
@@ -120,6 +122,7 @@ const AppContent: React.FC = () => {
       <AccessibilityPanel />
       <FeedbackButton />
       <TutorialOverlay />
+      <GlobalToasts />
     </div>
   );
 };
@@ -128,11 +131,13 @@ function App() {
   return (
     <AccessibilityProvider>
       <EnvironmentProvider>
-        <TutorialProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TutorialProvider>
+        <NotificationProvider>
+          <TutorialProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TutorialProvider>
+        </NotificationProvider>
       </EnvironmentProvider>
     </AccessibilityProvider>
   );
