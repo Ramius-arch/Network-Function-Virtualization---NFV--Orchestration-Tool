@@ -578,7 +578,7 @@ const NetworkTopology: React.FC = () => {
       <div className="flex-grow flex flex-col relative bg-[#030712]">
         
         {/* Sub Header */}
-        <div className="flex justify-between items-center p-4 bg-slate-950/75 border-b border-white/5 backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-950/75 border-b border-white/5 backdrop-blur-md gap-4">
           <div className="flex flex-col text-left">
             <h2 className="text-xl font-bold font-space-grotesk text-white">
               {envMode === 'demo' ? 'Simulated Topology Sandbox' : 'Network Topology'}
@@ -587,7 +587,7 @@ const NetworkTopology: React.FC = () => {
               {envMode === 'demo' ? 'SANDBOX_ENVIRONMENT_ACTIVE' : 'Global_Infrastructure_View_v2.1'}
             </span>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-wrap gap-4 items-center">
             <div className="flex gap-2 items-center">
               <span className="relative flex h-2 w-2 items-center justify-center">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-75"></span>
@@ -595,8 +595,8 @@ const NetworkTopology: React.FC = () => {
               </span>
               <span className="text-[10px] font-mono uppercase text-slate-400">Live_Sync</span>
             </div>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex gap-4">
+            <div className="h-6 w-px bg-white/10 hidden sm:block"></div>
+            <div className="flex flex-wrap gap-3">
               {[['#EC4899', 'Ingress'], ['#8B5CF6', 'Security'], ['#06B6D4', 'Data_Core'], ['#10B981', 'Egress']].map(([c, l]) => (
                 <div key={l} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-lg" style={{ backgroundColor: c }} />

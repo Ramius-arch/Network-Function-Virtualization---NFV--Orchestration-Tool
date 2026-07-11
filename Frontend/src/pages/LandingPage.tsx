@@ -194,7 +194,7 @@ const LandingPage: React.FC = () => {
         </motion.div>
 
         {/* ── RIGHT: 3D Scene Column ─────────────────────────────────────── */}
-        <div className="relative w-full h-full min-h-screen flex justify-center items-end overflow-visible">
+        <div className="relative w-full h-[450px] lg:h-full lg:min-h-screen flex justify-center items-end overflow-visible">
           
           {/* Spotlight behind robot */}
           <div
