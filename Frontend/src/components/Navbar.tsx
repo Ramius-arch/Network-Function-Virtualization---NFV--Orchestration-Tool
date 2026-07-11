@@ -26,6 +26,7 @@ const Navbar: React.FC = () => {
   }
 
   const navItems = [
+    { label: 'Landing Page', path: '/' },
     { label: 'Overview', path: '/dashboard' },
     { label: 'Topology', path: '/topology' },
     { label: 'Monitoring', path: '/monitoring' },
@@ -38,7 +39,7 @@ const Navbar: React.FC = () => {
       <div className="flex justify-between items-center max-w-7xl mx-auto h-12">
         
         {/* Brand logo */}
-        <NavLink to={token ? "/dashboard" : "/"} className="flex items-center gap-3 group">
+        <NavLink to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 border border-violet-500/30 rounded-xl flex items-center justify-center text-violet-400 bg-violet-500/5 group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 shadow-lg shadow-violet-500/5">
             <span className="text-xl font-bold font-space-grotesk">⌬</span>
           </div>
