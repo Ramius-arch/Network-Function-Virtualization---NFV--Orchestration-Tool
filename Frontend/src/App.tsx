@@ -10,7 +10,7 @@ import TutorialOverlay from './components/TutorialOverlay';
 import AtomicMascot from './components/AtomicMascot';
 import AccessibilityPanel from './components/AccessibilityPanel';
 import FeedbackButton from './components/FeedbackButton';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import DashboardOverview from './pages/DashboardOverview';
 import TopologyPage from './pages/TopologyPage';
@@ -133,9 +133,9 @@ function App() {
       <EnvironmentProvider>
         <NotificationProvider>
           <TutorialProvider>
-            <BrowserRouter>
+            <HashRouter>
               <AppContent />
-            </BrowserRouter>
+            </HashRouter>
           </TutorialProvider>
         </NotificationProvider>
       </EnvironmentProvider>
