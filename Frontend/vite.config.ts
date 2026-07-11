@@ -4,9 +4,8 @@ import { defineConfig as defineVitestConfig } from 'vitest/config'; // Import de
 
 dotenv.config();
 
-// https://vitejs.dev/config/
-export default defineVitestConfig({
-  // Use defineVitestConfig here
+export default defineVitestConfig(({ mode }) => ({
+  base: mode === 'production' ? '/Network-Function-Virtualization---NFV--Orchestration-Tool/' : '/',
   plugins: [react()],
   server: {
     proxy: {
@@ -26,4 +25,4 @@ export default defineVitestConfig({
     globals: true, // This enables globals like describe, it, expect
     setupFiles: './vitest.setup.ts', // Setup file for @testing-library/jest-dom
   },
-});
+}));
