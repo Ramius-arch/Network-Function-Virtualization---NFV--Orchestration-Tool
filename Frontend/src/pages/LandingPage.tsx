@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
   const pageRef   = useRef<HTMLDivElement>(null);
   
   // Set default mode ('ironman' or 'spline')
-  const [robotMode] = useState<RobotMode>('ironman');
+  const [robotMode] = useState<RobotMode>('spline');
 
   // ── Cursor coordinates for Iron Man head tracking ─────────────────────────
   const rawX = useMotionValue(0.5);
