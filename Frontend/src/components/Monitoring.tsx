@@ -259,7 +259,15 @@ const Monitoring: React.FC = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' as const, labels: { color: '#F8FAFC', font: { family: 'Space Grotesk', size: 10 } } },
+      legend: { 
+        position: 'top' as const, 
+        labels: { 
+          color: '#F8FAFC', 
+          boxWidth: 10,
+          padding: 6,
+          font: { family: 'Space Grotesk', size: 9 } 
+        } 
+      },
       tooltip: { backgroundColor: 'rgba(3, 7, 18, 0.95)', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 },
     },
     scales: {
@@ -269,7 +277,7 @@ const Monitoring: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-slate-950/60 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl flex flex-col min-h-[850px] hover:border-violet-500/30 transition-all duration-300 relative text-left">
+    <div className="p-4 sm:p-6 bg-slate-950/60 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl flex flex-col min-h-[850px] hover:border-violet-500/30 transition-all duration-300 relative text-left">
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/5 pb-4 gap-4">
         <div>
@@ -407,7 +415,7 @@ const Monitoring: React.FC = () => {
         </div>
 
         {/* Right Column: High Res Chart */}
-        <div className="lg:col-span-8 bg-slate-900/10 rounded-2xl border border-white/5 p-6 relative flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-slate-900/10 rounded-2xl border border-white/5 p-3 sm:p-6 relative flex flex-col justify-between">
           <div className="absolute top-4 right-6 text-[8px] text-slate-500 font-mono">
             REFRESH_RATE: 4000MS // ENCRYPTION: SECURE
           </div>

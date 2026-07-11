@@ -107,7 +107,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-text transition-colors duration-300">
       <Navbar />
-      <main className="flex-grow p-6 animate-fade-in container mx-auto">
+      <main className="flex-grow p-3 md:p-6 animate-fade-in container mx-auto">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<DashboardOverview />} />

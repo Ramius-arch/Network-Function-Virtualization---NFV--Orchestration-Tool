@@ -3,7 +3,7 @@ import Monitoring from '../components/Monitoring';
 
 const MonitoringPage: React.FC = () => {
     return (
-        <div className="h-full flex flex-col gap-12 animate-fade-in max-w-7xl mx-auto py-12 px-6">
+        <div className="h-full flex flex-col gap-6 md:gap-12 animate-fade-in max-w-7xl mx-auto py-6 md:py-12 px-3 md:px-6">
             <div className="flex flex-col gap-4 border-b border-white/5 pb-8 text-left">
                 <h1 className="text-4xl font-bold text-white font-space-grotesk tracking-tight">Telemetry Stream</h1>
                 <p className="text-sm text-slate-400 max-w-3xl leading-relaxed mt-2 font-light">
@@ -11,7 +11,7 @@ const MonitoringPage: React.FC = () => {
                 </p>
             </div>
 
-            <div className="bg-slate-950/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 shadow-2xl">
+            <div className="bg-slate-950/40 backdrop-blur-xl border border-white/5 rounded-3xl p-3 md:p-6 shadow-2xl">
                 <Monitoring />
             </div>
 
