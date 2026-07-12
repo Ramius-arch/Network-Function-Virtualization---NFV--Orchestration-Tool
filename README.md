@@ -100,6 +100,23 @@ graph TD
 
 ---
 
+## 📊 Telemetry System Design: Showcase vs. Production
+
+To ensure a seamless, cost-effective, and highly interactive experience for public portfolio showcases, the telemetry monitoring in this project employs a dual-path design:
+
+### 1. Interactive Showcase Mode (Live Demo)
+For public showcases and guest exploration, the application utilizes a high-performance, client-side simulation engine built with **Chart.js** and React context:
+* **Zero Database Overhead:** Runs completely stateless in the browser, eliminating the need to spin up and pay for active time-series database VMs.
+* **Interactive Workload Injection:** Unlike traditional read-only dashboards, our custom engine lets you actively adjust sliders (Traffic Flow, CPU Workload, Memory Pressure) or toggle preset system outages (DDoS Stress Test, Primary Node Failover) and observe the graph charts and tactical event logs react in real-time.
+* **Console Guard:** A centralized API interceptor captures all telemetry REST requests in Guest mode and feeds mock data locally, producing zero console errors or `401 Unauthorized` log clutter.
+
+### 2. Production Architecture (Prometheus & Grafana)
+In enterprise environments, the simulated metrics engine is designed to transition to a standard Cloud-Native telemetry stack:
+* **Prometheus Scraping (`/metrics`):** The Node.js backend uses `prom-client` to record default system runtime stats and custom VNF gauges (e.g. `nfv_vnf_status`, `vnf_cpu_usage_ratio`, `vnf_network_throughput_bytes_total`). It exposes them via a standardized `/metrics` HTTP endpoint for Prometheus to pull.
+* **Grafana Dashboard Embedding:** Production-grade analytics dashboards (gauges, heatmaps, alerts) are integrated directly into the React control deck using Grafana's anonymous iframe embedding capabilities (`allow_embedding = true`).
+
+---
+
 ## 🎨 UI/UX Philosophy: "The Atomic Aesthetic"
 The platform features a custom-engineered **Atomic Theme**—a professional-grade, eye-friendly "Midnight" aesthetic designed for long operational shifts. It prioritizes information density while maintaining visual comfort through:
 - **Softer Neon Palette**: High-contrast elements shifted to eye-friendly cyan and muted amber.
